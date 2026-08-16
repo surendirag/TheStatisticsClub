@@ -1,0 +1,10 @@
+.event-sections {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.event-section-header p {
+  margin: -0.5rem 0 1rem;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}

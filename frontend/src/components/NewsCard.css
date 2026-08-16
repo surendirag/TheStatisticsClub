@@ -1,0 +1,17 @@
+.news-card time {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin-bottom: 0.5rem;
+}
+
+.news-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.news-card p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}

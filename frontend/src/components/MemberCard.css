@@ -1,0 +1,40 @@
+.member-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.member-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.member-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-initial {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.member-info h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+}
+
+.member-roll {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
