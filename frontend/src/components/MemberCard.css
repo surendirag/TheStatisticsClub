@@ -1,3 +1,5 @@
+/* Explicit card-internal colors for member cards */
+
 .member-card {
   display: flex;
   align-items: center;
@@ -25,16 +27,17 @@
 .member-initial {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: #1d4ed8;                        /* blue-700 — vivid on light gradient */
 }
 
 .member-info h3 {
   margin: 0 0 0.2rem;
   font-size: 1rem;
+  color: #1e293b;                        /* slate-800                          */
 }
 
 .member-roll {
   margin: 0;
-  color: var(--color-muted);
+  color: #475569;                        /* slate-600                          */
   font-size: 0.875rem;
 }

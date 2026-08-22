@@ -13,7 +13,7 @@ export default function Navbar() {
     <header className="navbar">
       <div className="container navbar-inner">
         <NavLink to="/" className="brand">
-          <span className="brand-mark">Σ</span>
+          <img src="/club-logo.png" alt="The Statistics Club logo" className="brand-logo" />
           <span>The Statistics Club</span>
         </NavLink>
 
@@ -28,9 +28,6 @@ export default function Navbar() {
               {link.label}
             </NavLink>
           ))}
-          <NavLink to="/admin" className="nav-link admin-link">
-            Admin
-          </NavLink>
         </nav>
       </div>
     </header>

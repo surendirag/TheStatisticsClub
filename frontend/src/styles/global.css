@@ -1,50 +1,58 @@
+/*
+  Color strategy for the ripple background
+  ─────────────────────────────────────────
+  The backdrop is a dark-navy/indigo photo (stats dashboard) with a
+  rgba(15,23,42,0.45) → rgba(30,58,138,0.6) overlay.
+
+  Outside cards (page headings, section labels, hero text):
+    → Pure white would wash into light chart areas of the dashboard image.
+    → We use a very faint warm-tinted white (#f0f6ff) with a strong multi-
+       layer text-shadow so text pops against BOTH the dark navy AND any
+       light chart area that shows through.
+
+  Inside cards (`.card` surface = rgba(255,255,255,0.88)):
+    → Background is light, so we use dark slate text (#1e293b / #475569).
+    → `--color-text` and `--color-muted` serve card text only.
+*/
+
 :root {
-  --color-bg: #f8f9fb;
-  --color-surface: #ffffff;
-  --color-text: #1a1f2e;
-  --color-muted: #5c6478;
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-border: #e2e8f0;
-  --color-accent: #0ea5e9;
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.1);
+  /* Card / surface colours */
+  --color-bg:           transparent;
+  --color-surface:      rgba(255, 255, 255, 0.88);
+  --color-text:         #1e293b;          /* slate-800 – sharp on white card  */
+  --color-muted:        #475569;          /* slate-600 – secondary card text  */
+  --color-border:       rgba(255, 255, 255, 0.35);
+
+  /* Accent colours */
+  --color-primary:      #2563eb;          /* blue-600  */
+  --color-primary-dark: #1d4ed8;          /* blue-700  */
+  --color-accent:       #0ea5e9;          /* sky-500   */
+
+  /* Shadows */
+  --shadow-sm: 0 1px 4px rgba(15, 23, 42, 0.10);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.15);
+
+  /* Typography */
   --radius: 12px;
   --max-width: 1100px;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   color: var(--color-text);
-  background: var(--color-bg);
+  background: transparent;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* ── Reset ────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-}
+body { margin: 0; min-height: 100vh; }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+a { color: inherit; text-decoration: none; }
 
-img {
-  max-width: 100%;
-  display: block;
-}
+img { max-width: 100%; display: block; }
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
+button, input, textarea, select { font: inherit; }
 
+/* ── Layout helpers ───────────────────────────────────────────────────────── */
 .container {
   width: min(var(--max-width), calc(100% - 2rem));
   margin-inline: auto;
@@ -54,6 +62,12 @@ select {
   padding: 2.5rem 0 4rem;
 }
 
+/* ── Page headings (rendered ON TOP of the ripple backdrop) ───────────────── */
+/*
+  Strong three-layer shadow: close dark edge + mid blur + wide halo.
+  This ensures the heading pops against both the dark navy AND any pale chart
+  area visible through the overlay.
+*/
 .page-header {
   margin-bottom: 2rem;
 }
@@ -61,18 +75,34 @@ select {
 .page-header h1 {
   margin: 0 0 0.5rem;
   font-size: 2rem;
+  font-weight: 700;
+  color: #e8f4ff;                         /* warm ice-blue – not pure white    */
+  text-shadow:
+    0 1px 0   rgba(0, 0, 0, 0.9),         /* hard edge                         */
+    0 2px 8px  rgba(0, 0, 0, 0.6),         /* close blur                        */
+    0 4px 20px rgba(0, 0, 0, 0.4);         /* wide halo                         */
 }
 
 .page-header p {
   margin: 0;
-  color: var(--color-muted);
+  color: #bfdbfe;                         /* blue-200 – readable tint, not white */
+  text-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.7),
+    0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
+/* ── Section titles (e.g. domain groupings on About page) ────────────────── */
 .section-title {
   margin: 0 0 1rem;
   font-size: 1.25rem;
+  font-weight: 600;
+  color: #bfdbfe;                         /* blue-200                           */
+  text-shadow:
+    0 1px 0   rgba(0, 0, 0, 0.8),
+    0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
+/* ── Badges ───────────────────────────────────────────────────────────────── */
 .badge {
   display: inline-block;
   padding: 0.2rem 0.65rem;
@@ -83,21 +113,15 @@ select {
   letter-spacing: 0.04em;
 }
 
-.badge-previous {
-  background: #f1f5f9;
-  color: #475569;
-}
+.badge-previous { background: #f1f5f9; color: #475569; }
+.badge-ongoing  { background: #dcfce7; color: #166534; }
+.badge-upcoming { background: #dbeafe; color: #1e40af; }
 
-.badge-ongoing {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.badge-upcoming {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+/*
+  Cards have a near-opaque white surface so their inner text uses the dark
+  --color-text / --color-muted palette — no confusion with the bg.
+*/
 .card-grid {
   display: grid;
   gap: 1.25rem;
@@ -106,25 +130,27 @@ select {
 
 .card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--radius);
   padding: 1.25rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 2px 8px  rgba(15, 23, 42, 0.12),
+    0 0  0 1px rgba(37, 99, 235, 0.06);   /* faint blue rim ties to palette   */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
+/* ── Empty / form states ──────────────────────────────────────────────────── */
 .empty-state {
   padding: 2rem;
   text-align: center;
   color: var(--color-muted);
-  border: 1px dashed var(--color-border);
+  border: 1px dashed rgba(255, 255, 255, 0.4);
   border-radius: var(--radius);
   background: var(--color-surface);
 }
 
-.form-grid {
-  display: grid;
-  gap: 1rem;
-}
+.form-grid { display: grid; gap: 1rem; }
 
 .form-field label {
   display: block;
@@ -148,6 +174,7 @@ select {
   resize: vertical;
 }
 
+/* ── Legacy .btn classes (still used by admin pages) ─────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -161,14 +188,8 @@ select {
   transition: background 0.15s ease;
 }
 
-.btn-primary {
-  background: var(--color-primary);
-  color: white;
-}
-
-.btn-primary:hover {
-  background: var(--color-primary-dark);
-}
+.btn-primary { background: var(--color-primary); color: white; }
+.btn-primary:hover { background: var(--color-primary-dark); }
 
 .btn-secondary {
   background: var(--color-surface);
@@ -176,13 +197,6 @@ select {
   border: 1px solid var(--color-border);
 }
 
-.btn-danger {
-  background: #fee2e2;
-  color: #b91c1c;
-}
+.btn-danger { background: #fee2e2; color: #b91c1c; }
 
-.btn-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
+.btn-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }

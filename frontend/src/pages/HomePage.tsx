@@ -20,12 +20,8 @@ export default function HomePage() {
           <p className="hero-subtitle">{home.heroSubtitle}</p>
           <p className="hero-intro">{home.intro}</p>
           <div className="hero-actions">
-            <Link to="/events" className="btn btn-primary">
-              View Events
-            </Link>
-            <Link to="/about" className="btn btn-secondary">
-              Meet the Team
-            </Link>
+            <Link to="/events" className="btn btn-primary">View Events</Link>
+            <Link to="/about" className="btn btn-secondary">Meet the Team</Link>
           </div>
         </div>
       </section>

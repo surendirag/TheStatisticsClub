@@ -95,26 +95,3 @@ export const defaultContent: SiteContent = {
     },
   ],
 }
-
-const STORAGE_KEY = 'statistics-club-content'
-
-export function loadContent(): SiteContent {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      return JSON.parse(stored) as SiteContent
-    }
-  } catch {
-    // fall through to default
-  }
-  return defaultContent
-}
-
-export function saveContent(content: SiteContent): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(content))
-}
-
-export function resetContent(): SiteContent {
-  localStorage.removeItem(STORAGE_KEY)
-  return defaultContent
-}

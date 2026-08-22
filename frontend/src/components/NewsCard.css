@@ -1,17 +1,24 @@
+/* All card text inherits --color-text (dark slate) from :root via .card.   */
+/* These rules make explicit colors so nothing accidentally inherits the      */
+/* white/ice-blue used outside cards on the ripple backdrop.                 */
+
 .news-card time {
   display: block;
   font-size: 0.8rem;
-  color: var(--color-muted);
+  color: #2563eb;                        /* blue-600 — date stands out clearly */
+  font-weight: 600;
   margin-bottom: 0.5rem;
 }
 
 .news-card h3 {
   margin: 0 0 0.5rem;
   font-size: 1.05rem;
+  color: #1e293b;                        /* slate-800 */
 }
 
 .news-card p {
   margin: 0;
-  color: var(--color-muted);
+  color: #475569;                        /* slate-600 */
   font-size: 0.95rem;
+  line-height: 1.6;
 }

@@ -38,5 +38,3 @@ export interface SiteContent {
   news: NewsItem[]
   events: ClubEvent[]
 }
-
-export type AdminSection = 'home' | 'about' | 'news' | 'events'

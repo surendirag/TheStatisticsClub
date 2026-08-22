@@ -5,12 +5,6 @@ import HomePage from './pages/HomePage'
 import AboutPage from './pages/AboutPage'
 import NewsPage from './pages/NewsPage'
 import EventsPage from './pages/EventsPage'
-import AdminLayout from './pages/admin/AdminLayout'
-import AdminOverview from './pages/admin/AdminOverview'
-import AdminHome from './pages/admin/AdminHome'
-import AdminAbout from './pages/admin/AdminAbout'
-import AdminNews from './pages/admin/AdminNews'
-import AdminEvents from './pages/admin/AdminEvents'
 
 export default function App() {
   return (
@@ -22,14 +16,6 @@ export default function App() {
             <Route path="about" element={<AboutPage />} />
             <Route path="news" element={<NewsPage />} />
             <Route path="events" element={<EventsPage />} />
-          </Route>
-
-          <Route path="admin" element={<AdminLayout />}>
-            <Route index element={<AdminOverview />} />
-            <Route path="home" element={<AdminHome />} />
-            <Route path="about" element={<AdminAbout />} />
-            <Route path="news" element={<AdminNews />} />
-            <Route path="events" element={<AdminEvents />} />
           </Route>
         </Routes>
       </BrowserRouter>

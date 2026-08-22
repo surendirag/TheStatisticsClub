@@ -1,0 +1,19 @@
+.page-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: auto;
+}
+
+/* Very subtle darkening vignette — the gradient texture itself handles depth */
+.page-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.08) 0%,
+    rgba(0, 0, 0, 0.18) 100%
+  );
+  pointer-events: none;
+}
