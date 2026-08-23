@@ -5,15 +5,16 @@
   pointer-events: auto;
 }
 
-/* Very subtle darkening vignette — the gradient texture itself handles depth */
+/* Dark gradient overlay to preserve high legibility over the graphic artwork */
 .page-backdrop::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.08) 0%,
-    rgba(0, 0, 0, 0.18) 100%
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.05) 50%,
+    rgba(0, 0, 0, 0.2) 100%
   );
   pointer-events: none;
 }
