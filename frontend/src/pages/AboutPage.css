@@ -1,0 +1,8 @@
+.domain-sections {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.domain-section {
+  padding-bottom: 0.5rem;
+}

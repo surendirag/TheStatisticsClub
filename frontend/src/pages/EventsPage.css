@@ -1,0 +1,13 @@
+.event-sections {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.event-section-header p {
+  margin: -0.5rem 0 1rem;
+  color: #bfdbfe;                        /* blue-200 — matches global palette */
+  font-size: 0.95rem;
+  text-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.7),
+    0 2px 12px rgba(0, 0, 0, 0.4);
+}

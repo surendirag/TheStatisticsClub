@@ -1,0 +1,43 @@
+/* Explicit card-internal colors for member cards */
+
+.member-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.member-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.member-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-initial {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1d4ed8;                        /* blue-700 — vivid on light gradient */
+}
+
+.member-info h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  color: #1e293b;                        /* slate-800                          */
+}
+
+.member-roll {
+  margin: 0;
+  color: #475569;                        /* slate-600                          */
+  font-size: 0.875rem;
+}
