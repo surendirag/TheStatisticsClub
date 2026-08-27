@@ -23,7 +23,7 @@ export default function LoginPage () {
             const data = await resp.json();
 
             if (resp.ok) {
-                window.location.href = '/dashboard'; //change it ***********
+                window.location.href = '/dashboard'; //this force reloads, making way for context to work.
             } else {
                 alert(data.error); // "Invalid credentials"
             }

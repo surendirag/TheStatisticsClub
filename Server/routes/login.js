@@ -6,6 +6,9 @@ const router = express.Router();
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
+  console.log('email match:', email === process.env.ADMIN_EMAIL);
+  console.log('hash exists:', !!process.env.ADMIN_PASSWORD);
+
   const user = process.env.ADMIN_EMAIL;
   if (user!=email) return res.status(401).json({ error: 'Invalid credentials' });
 

@@ -1,6 +1,9 @@
+require('dotenv').config();
+
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const requireAuth = require('./middleware/requireAuth');
 
 const app = express();
 
@@ -11,7 +14,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-app.get('/me', requireAuth, (req, res) => {
+app.get('/api/me', requireAuth, (req, res) => {
   res.json({ email: req.user.email, role: req.user.role });
 });
 
@@ -19,3 +22,5 @@ const loginRoutes = require('./routes/login');
 app.use('/api', loginRoutes);
 
 app.listen(5000, () => console.log('Server on http://localhost:5000'));
+
+// add session timeout

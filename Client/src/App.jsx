@@ -1,17 +1,24 @@
-// client/src/App.jsx
-import { useEffect, useState } from 'react';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
 import LoginPage from './Admin-Dashboard/LoginPage';
+import { AuthProvider, useAuth } from './context/UserContext';
+import Dashboard from './Admin-Dashboard/Dashboard';
 
 function App() {
-  const [msg, setMsg] = useState('');
-
-  useEffect(() => {
-    fetch('/api/hello')
-      .then(r => r.json())
-      .then(data => setMsg(data.message));
-  }, []);
-
-  return <div><LoginPage /><h1>{msg}</h1></div>;
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={<LoginPage />} />
+          <Route path='/dashboard' element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  )
 }
-
 export default App;
+
+function ProtectedRoute({ children }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to='/' />;
+  return children;
+}
