@@ -6,7 +6,10 @@ const cors = require('cors');
 const requireAuth = require('./middleware/requireAuth');
 
 const app = express();
+const connectDB = require('./config/db');
 
+// Connect to Database
+connectDB();
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
@@ -21,6 +24,8 @@ app.get('/api/me', requireAuth, (req, res) => {
 const loginRoutes = require('./routes/login');
 app.use('/api', loginRoutes);
 
+const eventRoutes = require('./routes/eventRoutes');
+app.use('/api/events', eventRoutes);
 app.listen(5000, () => console.log('Server on http://localhost:5000'));
 
 // add session timeout
