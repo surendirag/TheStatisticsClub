@@ -1,9 +1,6 @@
 const Event = require('../models/Event');
 const cloudinary = require('../config/cloudinary');
 
-// @desc    Get all events
-// @route   GET /api/events
-// @access  Public
 const getEvents = async (req, res) => {
     try {
         const events = await Event.find().sort({ date: 1 });
@@ -13,12 +10,9 @@ const getEvents = async (req, res) => {
     }
 };
 
-// @desc    Add a new event
-// @route   POST /api/events
-// @access  Private
 const addEvent = async (req, res) => {
     try {
-        const { title, description, date, venue } = req.body;
+        const { title, description, date, status, location } = req.body;
         
         if (!req.file) {
             return res.status(400).json({ message: 'Image is required' });
@@ -28,7 +22,8 @@ const addEvent = async (req, res) => {
             title,
             description,
             date,
-            venue,
+            status,
+            location,
             imageUrl: req.file.path,
             cloudinaryId: req.file.filename
         });
@@ -39,9 +34,6 @@ const addEvent = async (req, res) => {
     }
 };
 
-// @desc    Delete an event
-// @route   DELETE /api/events/:id
-// @access  Private
 const deleteEvent = async (req, res) => {
     try {
         const event = await Event.findById(req.params.id);
@@ -50,10 +42,7 @@ const deleteEvent = async (req, res) => {
             return res.status(404).json({ message: 'Event not found' });
         }
 
-        // Delete image from cloudinary
         await cloudinary.uploader.destroy(event.cloudinaryId);
-
-        // Delete from DB
         await event.deleteOne();
 
         res.json({ message: 'Event removed' });
