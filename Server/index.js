@@ -26,6 +26,12 @@ app.use('/api', loginRoutes);
 
 const eventRoutes = require('./routes/eventRoutes');
 app.use('/api/events', eventRoutes);
+
+const newsRoutes = require('./routes/newsRoutes');
+app.use('/api/news', newsRoutes);
+
+const memberRoutes = require('./routes/memberRoutes');
+app.use('/api/members', memberRoutes);
 app.listen(5000, () => console.log('Server on http://localhost:5000'));
 
 // add session timeout
