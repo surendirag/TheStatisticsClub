@@ -1,22 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import "./newsEditor.css";
 
-const INITIAL_NEWS = [
-  {
-    id: '1',
-    title: 'Club registration open for 2026',
-    content: 'We are now accepting new members for the upcoming academic year.',
-    date: '2026-08-01',
-  },
-];
-
 export function NewsDialog({ isOpen, onClose }) {
   const dialogRef = useRef();
-  const [data, setData] = useState(INITIAL_NEWS);
+  const [data, setData] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editRow, setEditRow] = useState({});
   const [adding, setAdding] = useState(false);
-  const emptyRow = { title: '', content: '', date: '' };
+  const emptyRow = { title: '', description: '', date: '', imageUrl: null };
   const [newRow, setNewRow] = useState(emptyRow);
 
   useEffect(() => {
@@ -29,9 +20,9 @@ export function NewsDialog({ isOpen, onClose }) {
     if (!isOpen) return;
     async function fetchData() {
       try {
-        // const res = await fetch('/api/news');
-        // const json = await res.json();
-        // setData(json);
+        const res = await fetch('/api/news');
+        const json = await res.json();
+        setData(json.map(item => ({ ...item, id: item._id })));
       } catch {
         alert('problem occured');
       }
@@ -39,28 +30,61 @@ export function NewsDialog({ isOpen, onClose }) {
     fetchData();
   }, [isOpen]);
 
-  const columns = ['title', 'content', 'date'];
+  const columns = ['title', 'description', 'date', 'imageUrl'];
 
   const startEdit = (row) => { setEditingId(row.id); setEditRow({ ...row }); };
   const cancelEdit = () => { setEditingId(null); setEditRow({}); };
-  const saveEdit = () => {
+
+  const saveEdit = async () => {
+    const formData = new FormData();
+    Object.entries(editRow).forEach(([key, value]) => {
+      if (value !== null) formData.append(key, value);
+    });
+    await fetch(`/api/news/${editingId}`, { method: 'PUT', body: formData });
     setData(prev => prev.map(row => row.id === editingId ? { ...editRow } : row));
-    // await fetch(`/api/news/${editingId}`, { method: 'PUT', body: JSON.stringify(editRow) })
     cancelEdit();
   };
-  const deleteRow = (id) => {
+
+  const deleteRow = async (id) => {
     if (!window.confirm('Delete this news item?')) return;
+    await fetch(`/api/news/${id}`, { method: 'DELETE' });
     setData(prev => prev.filter(row => row.id !== id));
-    // await fetch(`/api/news/${id}`, { method: 'DELETE' })
   };
-  const saveNew = () => {
-    if (!newRow.title || !newRow.content || !newRow.date) { alert('Fill all fields'); return; }
-    const id = String(Math.max(...data.map(r => Number(r.id))) + 1);
-    setData(prev => [...prev, { id, ...newRow }]);
-    // await fetch('/api/news', { method: 'POST', body: JSON.stringify(newRow) })
-    setNewRow(emptyRow); setAdding(false);
+
+  const saveNew = async () => {
+    if (!newRow.title || !newRow.date) { alert('Fill required fields'); return; }
+    const formData = new FormData();
+    Object.entries(newRow).forEach(([key, value]) => {
+      if (value !== null) formData.append(key, value);
+    });
+    const res = await fetch('/api/news', { method: 'POST', body: formData });
+    const created = await res.json();
+    setData(prev => [...prev, { ...created, id: created._id }]);
+    setNewRow(emptyRow);
+    setAdding(false);
   };
+
   const cancelNew = () => { setNewRow(emptyRow); setAdding(false); };
+
+  const renderCell = (col, value, onChange) => {
+    if (col === 'imageUrl') {
+      return (
+        <input
+          type="file"
+          accept="image/*"
+          className="table-input"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            if (file) onChange({ target: { value: file } });
+          }}
+        />
+      );
+    }
+    if (col === 'description') {
+      return <textarea className="table-input" value={value || ''} onChange={onChange} />;
+    }
+    return <input className="table-input" value={value || ''} onChange={onChange} />;
+  };
 
   return (
     <dialog ref={dialogRef} className="news-dialog" onClose={onClose}>
@@ -86,14 +110,16 @@ export function NewsDialog({ isOpen, onClose }) {
             </tr>
           </thead>
           <tbody>
-            {data.map(row => (
+            {data.map((row,i) => (
               <tr key={row.id} className="table-tr">
-                <td className="table-td">{row.id}</td>
+                <td className="table-td">{i+1}</td>
                 {columns.map(col => (
                   <td key={col} className="table-td">
                     {editingId === row.id
-                      ? <input className="table-input" value={editRow[col] || ''} onChange={(e) => setEditRow(prev => ({ ...prev, [col]: e.target.value }))} />
-                      : row[col]}
+                      ? renderCell(col, editRow[col], (e) => setEditRow(prev => ({ ...prev, [col]: e.target.value })))
+                      : col === 'imageUrl'
+                        ? row[col] ? <img src={row[col]} alt="" style={{ width: 40, height: 40, objectFit: 'cover' }} /> : '—'
+                        : row[col]}
                   </td>
                 ))}
                 <td className="table-td">
@@ -116,8 +142,7 @@ export function NewsDialog({ isOpen, onClose }) {
                 <td className="table-td">—</td>
                 {columns.map(col => (
                   <td key={col} className="table-td">
-                    <input className="table-input" placeholder={col} value={newRow[col] || ''}
-                      onChange={(e) => setNewRow(prev => ({ ...prev, [col]: e.target.value }))} />
+                    {renderCell(col, newRow[col], (e) => setNewRow(prev => ({ ...prev, [col]: e.target.value })))}
                   </td>
                 ))}
                 <td className="table-td">

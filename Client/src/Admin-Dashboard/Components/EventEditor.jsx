@@ -9,6 +9,7 @@ const INITIAL_EVENTS = [
     date: '2026-07-15',
     location: 'Lab 204',
     status: 'previous',
+    imageUrl: 'kkk.com/img.png'
   },
 ];
 
@@ -20,7 +21,7 @@ export function EventsDialog({ isOpen, onClose }) {
   const [editingId, setEditingId] = useState(null);
   const [editRow, setEditRow] = useState({});
   const [adding, setAdding] = useState(false);
-  const emptyRow = { title: '', description: '', date: '', location: '', status: 'upcoming' };
+  const emptyRow = { title: '', description: '', date: '', location: '', status: 'upcoming', imageUrl: null };
   const [newRow, setNewRow] = useState(emptyRow);
 
   useEffect(() => {
@@ -33,9 +34,9 @@ export function EventsDialog({ isOpen, onClose }) {
     if (!isOpen) return;
     async function fetchData() {
       try {
-        // const res = await fetch('/api/events');
-        // const json = await res.json();
-        // setData(json);
+        const res = await fetch('/api/events');
+        const json = await res.json();
+        setData(json.map(event => ({ ...event, id: event._id })));
       } catch {
         alert('problem occured');
       }
@@ -43,25 +44,31 @@ export function EventsDialog({ isOpen, onClose }) {
     fetchData();
   }, [isOpen]);
 
-  const columns = ['title', 'description', 'date', 'location', 'status'];
+  const columns = ['title', 'description', 'date', 'location', 'status', 'imageUrl'];
 
   const startEdit = (row) => { setEditingId(row.id); setEditRow({ ...row }); };
   const cancelEdit = () => { setEditingId(null); setEditRow({}); };
-  const saveEdit = () => {
-    setData(prev => prev.map(row => row.id === editingId ? { ...editRow } : row));
-    // await fetch(`/api/events/${editingId}`, { method: 'PUT', body: JSON.stringify(editRow) })
+  const saveEdit = async () => {
+    const formData = new FormData();
+    Object.entries(editRow).forEach(([key, value]) => formData.append(key, value));
+
+    await fetch(`/api/events/${editingId}`, { method: 'PUT', body: formData });
     cancelEdit();
   };
-  const deleteRow = (id) => {
+  const deleteRow = async (id) => {
     if (!window.confirm('Delete this event?')) return;
     setData(prev => prev.filter(row => row.id !== id));
-    // await fetch(`/api/events/${id}`, { method: 'DELETE' })
+    await fetch(`/api/events/${id}`, { method: 'DELETE' })
   };
-  const saveNew = () => {
+  const saveNew = async () => {
     if (!newRow.title || !newRow.date || !newRow.location) { alert('Fill required fields'); return; }
-    const id = String(Math.max(...data.map(r => Number(r.id))) + 1);
-    setData(prev => [...prev, { id, ...newRow }]);
-    // await fetch('/api/events', { method: 'POST', body: JSON.stringify(newRow) })
+    
+    const formData = new FormData();
+    Object.entries(newRow).forEach(([key, value]) => formData.append(key, value));
+
+    const res = await fetch('/api/events', { method: 'POST', body: formData });
+    const created = await res.json();
+    setData(prev => [...prev, { ...created, id: created._id }]); 
     setNewRow(emptyRow); setAdding(false);
   };
   const cancelNew = () => { setNewRow(emptyRow); setAdding(false); };
@@ -79,6 +86,19 @@ export function EventsDialog({ isOpen, onClose }) {
         return (
             <textarea className="table-input" value={value} onChange={onChange} />
         )
+    }
+    if (col === 'imageUrl') {
+        return (
+            <input 
+                type="file" 
+                accept="image/*"
+                className="table-input"
+                onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) onChange({ target: { value: file } });
+                }} 
+            />
+        );
     }
     return <input className="table-input" value={value} onChange={onChange} />;
   };
@@ -107,14 +127,16 @@ export function EventsDialog({ isOpen, onClose }) {
             </tr>
           </thead>
           <tbody>
-            {data.map(row => (
+            {data.map((row,i) => (
               <tr key={row.id} className="table-tr">
-                <td className="table-td">{row.id}</td>
+                <td className="table-td">{i+1}</td>
                 {columns.map(col => (
                   <td key={col} className="table-td">
                     {editingId === row.id
                       ? renderEditCell(col, editRow[col], (e) => setEditRow(prev => ({ ...prev, [col]: e.target.value })))
-                      : row[col]}
+                      : col === 'imageUrl'
+                        ? row[col] ? <img src={row[col]} alt="" style={{ width: 40, height: 40, objectFit: 'cover' }} /> : '—'
+                        : row[col]}
                   </td>
                 ))}
                 <td className="table-td">

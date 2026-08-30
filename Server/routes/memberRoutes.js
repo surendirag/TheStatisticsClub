@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getMembers, addMember, deleteMember } = require('../controllers/memberController');
+const { getMembers, addMember, deleteMember, updateMember } = require('../controllers/memberController');
 const upload = require('../middleware/upload');
 
 router.route('/')
@@ -8,6 +8,7 @@ router.route('/')
     .post(upload.single('image'), addMember);
 
 router.route('/:id')
+    .put(upload.single('image'), updateMember)
     .delete(deleteMember);
 
 module.exports = router;

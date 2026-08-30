@@ -7,7 +7,7 @@ import { EventsDialog } from "./Components/EventEditor";
 import "./Dashboard.css";
 
 const sections = [
-  { key: "hero", title: "Hero Section", desc: "Edit the homepage banner, headline and CTA.", color: "#45ff77" },
+  //{ key: "hero", title: "Hero Section", desc: "Edit the homepage banner, headline and CTA.", color: "#45ff77" },
   { key: "members", title: "Members", desc: "Manage team members and their profiles.", color: "#45b5ff" },
   { key: "news", title: "News", desc: "Publish and edit news articles.", color: "#ff45f9" },
   { key: "events", title: "Events", desc: "Create and manage upcoming events.", color: "#ff4551" },

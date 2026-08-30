@@ -20,15 +20,33 @@ const addNews = async (req, res) => {
             cloudinaryId = req.file.filename;
         }
 
-        const news = await News.create({
-            title,
-            description,
-            date,
-            imageUrl,
-            cloudinaryId
-        });
-
+        const news = await News.create({ title, description, date, imageUrl, cloudinaryId });
         res.status(201).json(news);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
+const updateNews = async (req, res) => {
+    try {
+        const news = await News.findById(req.params.id);
+        if (!news) return res.status(404).json({ message: 'News not found' });
+
+        const { title, description, date } = req.body;
+
+        // if new image uploaded, delete old one from cloudinary
+        if (req.file) {
+            if (news.cloudinaryId) await cloudinary.uploader.destroy(news.cloudinaryId);
+            news.imageUrl = req.file.path;
+            news.cloudinaryId = req.file.filename;
+        }
+
+        news.title = title || news.title;
+        news.description = description || news.description;
+        news.date = date || news.date;
+
+        const updated = await news.save();
+        res.json(updated);
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
@@ -37,14 +55,9 @@ const addNews = async (req, res) => {
 const deleteNews = async (req, res) => {
     try {
         const news = await News.findById(req.params.id);
+        if (!news) return res.status(404).json({ message: 'News not found' });
 
-        if (!news) {
-            return res.status(404).json({ message: 'News not found' });
-        }
-
-        if (news.cloudinaryId) {
-            await cloudinary.uploader.destroy(news.cloudinaryId);
-        }
+        if (news.cloudinaryId) await cloudinary.uploader.destroy(news.cloudinaryId);
         await news.deleteOne();
 
         res.json({ message: 'News removed' });
@@ -53,8 +66,4 @@ const deleteNews = async (req, res) => {
     }
 };
 
-module.exports = {
-    getNews,
-    addNews,
-    deleteNews
-};
+module.exports = { getNews, addNews, updateNews, deleteNews };

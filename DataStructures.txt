@@ -1,0 +1,29 @@
+4 Databases
+
+1. Events 
+    -id int primary key auto id
+    -title str 
+    -description str
+    -date date
+    -location str
+    -status str
+    -imageUrl str
+    -cloudinaryId str
+
+2. NEWS
+    -id int primary key auto id
+    -title str 
+    -description str
+    -date date
+    -imageUrl str optional
+    -cloudinaryId str optional
+
+3. Members
+    -id int primary key auto id
+    -name str
+    -roll no str
+    -domain str
+    -imageUrl str optional
+    -cloudinaryId str optional
+
+

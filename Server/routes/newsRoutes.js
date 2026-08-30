@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getNews, addNews, deleteNews } = require('../controllers/newsController');
+const { getNews, addNews, deleteNews, updateNews } = require('../controllers/newsController');
 const upload = require('../middleware/upload');
 
 router.route('/')
@@ -8,6 +8,7 @@ router.route('/')
     .post(upload.single('image'), addNews);
 
 router.route('/:id')
+    .put(upload.single('image'), updateNews)
     .delete(deleteNews);
 
 module.exports = router;

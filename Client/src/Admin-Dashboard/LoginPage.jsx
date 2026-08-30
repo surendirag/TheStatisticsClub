@@ -1,45 +1,78 @@
-import { useState, } from "react";
+import { useState } from "react";
+import "./LoginPage.css";
 
-export default function LoginPage () {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    
-    async function handleSubmit() {
-        if (!email || !password) {
-            alert('fill it guy');
-            return;
-        }
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [alert, setAlert] = useState(null); // { type: 'error' | 'success', message: '' }
+  const [loading, setLoading] = useState(false);
 
-        try {
-            const resp = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({ email, password })
-            });
+  const showAlert = (type, message) => {
+    setAlert({ type, message });
+    setTimeout(() => setAlert(null), 3000); // auto dismiss after 3s
+  };
 
-            const data = await resp.json();
-
-            if (resp.ok) {
-                window.location.href = '/dashboard'; //this force reloads, making way for context to work.
-            } else {
-                alert(data.error); // "Invalid credentials"
-            }
-
-        } catch (err) {
-            alert('Something went wrong, try again');
-            console.error(err);
-        }
+  async function handleSubmit() {
+    if (!email || !password) {
+      showAlert('error', 'Please fill in all fields');
+      return;
     }
 
-    return (
-        <div>
-            <input type='email' className="email" onChange={(e) => setEmail(e.target.value)} value={email} placeholder="email" required={true}/>
-            <input type='password' className="password" onChange={(e) => setPassword(e.target.value)} value={password} placeholder="password" required/>
-            <button type='submit' onClick={handleSubmit} >Bro, done 👍</button>
-        </div>
-    );
-}
+    setLoading(true);
+    try {
+      const resp = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
+      });
 
+      const data = await resp.json();
+
+      if (resp.ok) {
+        showAlert('success', 'Login successful! Redirecting...');
+        setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
+      } else {
+        showAlert('error', data.error || 'Invalid credentials');
+      }
+    } catch (err) {
+      showAlert('error', 'Something went wrong, try again');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="login-wrapper">
+      <div className="login-card">
+        <h2 className="login-title">Welcome Back</h2>
+
+        {alert && (
+          <div className={`alert alert-${alert.type}`}>
+            {alert.message}
+          </div>
+        )}
+
+        <input
+          type="email"
+          className="login-input"
+          onChange={(e) => setEmail(e.target.value)}
+          value={email}
+          placeholder="Email"
+        />
+        <input
+          type="password"
+          className="login-input"
+          onChange={(e) => setPassword(e.target.value)}
+          value={password}
+          placeholder="Password"
+          onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+        />
+        <button className="login-btn" onClick={handleSubmit} disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
+      </div>
+    </div>
+  );
+}
