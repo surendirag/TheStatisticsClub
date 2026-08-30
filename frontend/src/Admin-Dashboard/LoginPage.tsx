@@ -1,15 +1,20 @@
 import { useState } from "react";
 import "./LoginPage.css";
 
+interface AlertState {
+  type: 'error' | 'success';
+  message: string;
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [alert, setAlert] = useState(null); // { type: 'error' | 'success', message: '' }
+  const [alert, setAlert] = useState<AlertState | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const showAlert = (type, message) => {
+  const showAlert = (type: 'error' | 'success', message: string) => {
     setAlert({ type, message });
-    setTimeout(() => setAlert(null), 3000); // auto dismiss after 3s
+    setTimeout(() => setAlert(null), 3000);
   };
 
   async function handleSubmit() {

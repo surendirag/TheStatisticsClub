@@ -1,4 +1,9 @@
 /* Dialog Base Styling */
+
+dialog {
+  margin: auto;
+}
+
 .hero-dialog {
   background: #fff;
   border: none;

@@ -1,13 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import "./newsEditor.css";
 
-export function NewsDialog({ isOpen, onClose }) {
-  const dialogRef = useRef();
-  const [data, setData] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [editRow, setEditRow] = useState({});
+interface NewsItem {
+  id: string;
+  title: string;
+  description: string;
+  date: Date;
+  image: string | null;
+}
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function NewsDialog({ isOpen, onClose }: Props) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [data, setData] = useState<NewsItem[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editRow, setEditRow] = useState<Partial<NewsItem>>({});
   const [adding, setAdding] = useState(false);
-  const emptyRow = { title: '', description: '', date: '', imageUrl: null };
+  const emptyRow: Omit<NewsItem, 'id'> = { title: '', description: '', date: '' as any, image: null };
   const [newRow, setNewRow] = useState(emptyRow);
 
   useEffect(() => {
@@ -22,7 +35,7 @@ export function NewsDialog({ isOpen, onClose }) {
       try {
         const res = await fetch('/api/news');
         const json = await res.json();
-        setData(json.map(item => ({ ...item, id: item._id })));
+        setData(json.map((item: any) => ({ ...item, id: item._id, image: item.imageUrl })));
       } catch {
         alert('problem occured');
       }
@@ -30,22 +43,25 @@ export function NewsDialog({ isOpen, onClose }) {
     fetchData();
   }, [isOpen]);
 
-  const columns = ['title', 'description', 'date', 'imageUrl'];
+  const columns: (keyof Omit<NewsItem, 'id'>)[] = ['title', 'description', 'date', 'image'];
 
-  const startEdit = (row) => { setEditingId(row.id); setEditRow({ ...row }); };
+  const startEdit = (row: NewsItem) => { setEditingId(row.id); setEditRow({ ...row }); };
   const cancelEdit = () => { setEditingId(null); setEditRow({}); };
 
   const saveEdit = async () => {
     const formData = new FormData();
     Object.entries(editRow).forEach(([key, value]) => {
-      if (value !== null) formData.append(key, value);
+        if (value === null || value === undefined) return;
+        if (key === 'image') formData.append('image', value as unknown as Blob);
+        else if (key === 'imageUrl') return;
+        else formData.append(key, value as string);
     });
     await fetch(`/api/news/${editingId}`, { method: 'PUT', body: formData });
-    setData(prev => prev.map(row => row.id === editingId ? { ...editRow } : row));
+    setData(prev => prev.map(row => row.id === editingId ? { ...row, ...editRow } as NewsItem : row));
     cancelEdit();
   };
 
-  const deleteRow = async (id) => {
+  const deleteRow = async (id: string) => {
     if (!window.confirm('Delete this news item?')) return;
     await fetch(`/api/news/${id}`, { method: 'DELETE' });
     setData(prev => prev.filter(row => row.id !== id));
@@ -55,26 +71,29 @@ export function NewsDialog({ isOpen, onClose }) {
     if (!newRow.title || !newRow.date) { alert('Fill required fields'); return; }
     const formData = new FormData();
     Object.entries(newRow).forEach(([key, value]) => {
-      if (value !== null) formData.append(key, value);
+        if (value === null || value === undefined) return;
+        if (key === 'image') formData.append('image', value as unknown as Blob);
+        else if (key === 'imageUrl') return;
+        else formData.append(key, value as string);
     });
     const res = await fetch('/api/news', { method: 'POST', body: formData });
     const created = await res.json();
-    setData(prev => [...prev, { ...created, id: created._id }]);
+    setData(prev => [...prev, { ...created, id: created._id, image: created.imageUrl }]);
     setNewRow(emptyRow);
     setAdding(false);
   };
 
   const cancelNew = () => { setNewRow(emptyRow); setAdding(false); };
 
-  const renderCell = (col, value, onChange) => {
-    if (col === 'imageUrl') {
+  const renderCell = (col: string, value: any, onChange: (e: any) => void) => {
+    if (col === 'image') {
       return (
         <input
           type="file"
           accept="image/*"
           className="table-input"
           onChange={(e) => {
-            const file = e.target.files[0];
+            const file = e.target.files?.[0];
             if (file) onChange({ target: { value: file } });
           }}
         />
@@ -82,6 +101,16 @@ export function NewsDialog({ isOpen, onClose }) {
     }
     if (col === 'description') {
       return <textarea className="table-input" value={value || ''} onChange={onChange} />;
+    }
+    if (col === 'date') {
+      return (
+        <input
+          type="date"
+          className="table-input"
+          value={value ? new Date(value).toISOString().split('T')[0] : ''}
+          onChange={onChange}
+        />
+      );
     }
     return <input className="table-input" value={value || ''} onChange={onChange} />;
   };
@@ -110,16 +139,20 @@ export function NewsDialog({ isOpen, onClose }) {
             </tr>
           </thead>
           <tbody>
-            {data.map((row,i) => (
+            {data.map((row, i) => (
               <tr key={row.id} className="table-tr">
-                <td className="table-td">{i+1}</td>
+                <td className="table-td">{i + 1}</td>
                 {columns.map(col => (
                   <td key={col} className="table-td">
                     {editingId === row.id
-                      ? renderCell(col, editRow[col], (e) => setEditRow(prev => ({ ...prev, [col]: e.target.value })))
-                      : col === 'imageUrl'
-                        ? row[col] ? <img src={row[col]} alt="" style={{ width: 40, height: 40, objectFit: 'cover' }} /> : '—'
-                        : row[col]}
+                      ? renderCell(col, editRow[col as keyof NewsItem], (e) => setEditRow(prev => ({ ...prev, [col]: e.target.value })))
+                      : col === 'date'
+                        ? row[col] ? new Date(row[col]).toLocaleDateString() : '—'
+                        : col === 'image'
+                          ? row[col] ? <img src={row[col] as string} alt="" style={{ width: 40, height: 40, objectFit: 'cover' }} /> : '—'
+                          : row[col as keyof NewsItem]
+                            ? String(row[col as keyof NewsItem])
+                            : '-'}
                   </td>
                 ))}
                 <td className="table-td">
@@ -142,7 +175,7 @@ export function NewsDialog({ isOpen, onClose }) {
                 <td className="table-td">—</td>
                 {columns.map(col => (
                   <td key={col} className="table-td">
-                    {renderCell(col, newRow[col], (e) => setNewRow(prev => ({ ...prev, [col]: e.target.value })))}
+                    {renderCell(col, newRow[col as keyof typeof newRow], (e) => setNewRow(prev => ({ ...prev, [col]: e.target.value })))}
                   </td>
                 ))}
                 <td className="table-td">

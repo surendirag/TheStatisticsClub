@@ -1,14 +1,35 @@
 import { NavLink } from 'react-router-dom'
 import './Navbar.css'
+import { useEffect, useState } from 'react'
+import { useAuth } from '../context/UserContext'
 
-const publicLinks = [
+const initialPublicLinks = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About Us' },
   { to: '/news', label: 'News' },
   { to: '/events', label: 'Events' },
-]
+  { to: '/login', label: 'Login'},
+];
+
+const adminPublicLinks = [
+  { to: '/', label: 'Home' },
+  { to: '/about', label: 'About Us' },
+  { to: '/news', label: 'News' },
+  { to: '/events', label: 'Events' },
+  { to: '/dashboard', label: 'Admin'},
+];
 
 export default function Navbar() {
+  const [publicLinks, setPublicLinks] = useState(initialPublicLinks);
+  const {user} = useAuth();
+
+  useEffect(()=>{
+    if (!user) return;
+    if (user) {
+      setPublicLinks(adminPublicLinks)
+    }
+  },[user]);
+
   return (
     <header className="navbar">
       <div className="container navbar-inner">

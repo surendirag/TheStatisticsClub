@@ -1,27 +1,31 @@
 import { useEffect, useRef, useState } from "react";
 import "./eventEditor.css";
+import type { NewsItem } from "../../types";
 
-const INITIAL_EVENTS = [
-  {
-    id: '1',
-    title: 'Intro to R Workshop',
-    description: 'Hands-on session covering data import, visualization, and basic modeling in R.',
-    date: '2026-07-15',
-    location: 'Lab 204',
-    status: 'previous',
-    imageUrl: 'kkk.com/img.png'
-  },
-];
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: Date;
+  location: string;
+  status: string;
+  image: string | null;
+}
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 const STATUS_OPTIONS = ['upcoming', 'ongoing', 'previous'];
 
-export function EventsDialog({ isOpen, onClose }) {
-  const dialogRef = useRef();
-  const [data, setData] = useState(INITIAL_EVENTS);
-  const [editingId, setEditingId] = useState(null);
-  const [editRow, setEditRow] = useState({});
+export function EventsDialog({ isOpen, onClose }: Props) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [data, setData] = useState<Event[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editRow, setEditRow] = useState<Partial<Event>>({});
   const [adding, setAdding] = useState(false);
-  const emptyRow = { title: '', description: '', date: '', location: '', status: 'upcoming', imageUrl: null };
+  const emptyRow: Omit<Event, 'id'> = { title: '', description: '', date: '' as any, location: '', status: 'upcoming', image: null };
   const [newRow, setNewRow] = useState(emptyRow);
 
   useEffect(() => {
@@ -36,7 +40,7 @@ export function EventsDialog({ isOpen, onClose }) {
       try {
         const res = await fetch('/api/events');
         const json = await res.json();
-        setData(json.map(event => ({ ...event, id: event._id })));
+        setData(json.map((event: any) => ({ ...event, id: event._id, image: event.imageUrl })));
       } catch {
         alert('problem occured');
       }
@@ -44,37 +48,48 @@ export function EventsDialog({ isOpen, onClose }) {
     fetchData();
   }, [isOpen]);
 
-  const columns = ['title', 'description', 'date', 'location', 'status', 'imageUrl'];
+  const columns: (keyof Omit<Event, 'id'>)[] = ['title', 'description', 'date', 'location', 'status', 'image'];
 
-  const startEdit = (row) => { setEditingId(row.id); setEditRow({ ...row }); };
+  const startEdit = (row: Event) => { setEditingId(row.id); setEditRow({ ...row }); };
   const cancelEdit = () => { setEditingId(null); setEditRow({}); };
+
   const saveEdit = async () => {
     const formData = new FormData();
-    Object.entries(editRow).forEach(([key, value]) => formData.append(key, value));
-
+    Object.entries(editRow).forEach(([key, value]) => {
+        if (value === null || value === undefined) return;
+        if (key === 'image') formData.append('image', value as unknown as Blob);
+        else if (key === 'imageUrl') return;
+        else formData.append(key, value as string);
+    });
     await fetch(`/api/events/${editingId}`, { method: 'PUT', body: formData });
+    setData(prev => prev.map(row => row.id === editingId ? { ...row, ...editRow } as Event : row));
     cancelEdit();
   };
-  const deleteRow = async (id) => {
+
+  const deleteRow = async (id: string) => {
     if (!window.confirm('Delete this event?')) return;
     setData(prev => prev.filter(row => row.id !== id));
-    await fetch(`/api/events/${id}`, { method: 'DELETE' })
+    await fetch(`/api/events/${id}`, { method: 'DELETE' });
   };
+
   const saveNew = async () => {
     if (!newRow.title || !newRow.date || !newRow.location) { alert('Fill required fields'); return; }
-    
     const formData = new FormData();
-    Object.entries(newRow).forEach(([key, value]) => formData.append(key, value));
-
+    Object.entries(newRow).forEach(([key, value]) => {
+        if (value === null || value === undefined) return;
+        if (key === 'image') formData.append('image', value as unknown as Blob);
+        else if (key === 'imageUrl') return;
+        else formData.append(key, value as string);
+    });
     const res = await fetch('/api/events', { method: 'POST', body: formData });
     const created = await res.json();
-    setData(prev => [...prev, { ...created, id: created._id }]); 
+    setData(prev => [...prev, { ...created, id: created._id, image: created.imageUrl }]);
     setNewRow(emptyRow); setAdding(false);
   };
+
   const cancelNew = () => { setNewRow(emptyRow); setAdding(false); };
 
-  // status column gets a select, everything else gets a text input
-  const renderEditCell = (col, value, onChange) => {
+  const renderEditCell = (col: string, value: any, onChange: (e: any) => void) => {
     if (col === 'status') {
       return (
         <select className="table-input" value={value} onChange={onChange}>
@@ -83,24 +98,32 @@ export function EventsDialog({ isOpen, onClose }) {
       );
     }
     if (col === 'description') {
-        return (
-            <textarea className="table-input" value={value} onChange={onChange} />
-        )
+      return <textarea className="table-input" value={value || ''} onChange={onChange} />;
     }
-    if (col === 'imageUrl') {
-        return (
-            <input 
-                type="file" 
-                accept="image/*"
-                className="table-input"
-                onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) onChange({ target: { value: file } });
-                }} 
-            />
-        );
+    if (col === 'image') {
+      return (
+        <input
+          type="file"
+          accept="image/*"
+          className="table-input"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onChange({ target: { value: file } });
+          }}
+        />
+      );
     }
-    return <input className="table-input" value={value} onChange={onChange} />;
+    if (col === 'date') {
+  return (
+    <input
+      type="date"
+      className="table-input"
+      value={value ? new Date(value).toISOString().split('T')[0] : ''}
+      onChange={onChange}
+    />
+  );
+  }
+    return <input className="table-input" value={value || ''} onChange={onChange} />;
   };
 
   return (
@@ -127,16 +150,20 @@ export function EventsDialog({ isOpen, onClose }) {
             </tr>
           </thead>
           <tbody>
-            {data.map((row,i) => (
+            {data.map((row, i) => (
               <tr key={row.id} className="table-tr">
-                <td className="table-td">{i+1}</td>
+                <td className="table-td">{i + 1}</td>
                 {columns.map(col => (
                   <td key={col} className="table-td">
                     {editingId === row.id
-                      ? renderEditCell(col, editRow[col], (e) => setEditRow(prev => ({ ...prev, [col]: e.target.value })))
-                      : col === 'imageUrl'
-                        ? row[col] ? <img src={row[col]} alt="" style={{ width: 40, height: 40, objectFit: 'cover' }} /> : '—'
-                        : row[col]}
+                      ? renderEditCell(col, editRow[col as keyof Event], (e) => setEditRow(prev => ({ ...prev, [col]: e.target.value })))
+                      : col === 'date'
+                        ? row[col] ? new Date(row[col]).toLocaleDateString() : '—'
+                        : col === 'image'
+                          ? row[col] ? <img src={row[col] as string} alt="" style={{ width: 40, height: 40, objectFit: 'cover' }} /> : '—'
+                          : row[col as keyof Event]
+                            ? String(row[col as keyof Event]) 
+                            : '-'}
                   </td>
                 ))}
                 <td className="table-td">
@@ -159,7 +186,7 @@ export function EventsDialog({ isOpen, onClose }) {
                 <td className="table-td">—</td>
                 {columns.map(col => (
                   <td key={col} className="table-td">
-                    {renderEditCell(col, newRow[col], (e) => setNewRow(prev => ({ ...prev, [col]: e.target.value })))}
+                    {renderEditCell(col, newRow[col as keyof typeof newRow], (e) => setNewRow(prev => ({ ...prev, [col]: e.target.value })))}
                   </td>
                 ))}
                 <td className="table-td">

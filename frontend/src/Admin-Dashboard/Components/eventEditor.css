@@ -1,4 +1,9 @@
 /* Dialog Base & Overlay Styles */
+
+dialog {
+  margin: auto;
+}
+
 .events-dialog {
   background: #fff;
   border: none;
@@ -68,7 +73,7 @@
 }
 
 .col-location {
-  width: 50px;
+  width: 100px;
 }
 
 .col-status {

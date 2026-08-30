@@ -1,14 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import "./memberEditor.css";
 
-const INITIAL_DATA = [];
+interface Member {
+  id: string;
+  name: string;
+  rollNo: string;
+  domain: string;
+  image: string | null;
+}
 
-export function EditableTableDialog({ isOpen, onClose }) {
-  const [data, setData] = useState(INITIAL_DATA);
-  const [editingId, setEditingId] = useState(null);
-  const [editRow, setEditRow] = useState({});
-  const dialogRef = useRef(null);
-  const emptyRow = { name: "", rollNo: "", domain: "",  imageUrl: null };
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function EditableTableDialog({ isOpen, onClose }: Props) {
+  const [data, setData] = useState<Member[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editRow, setEditRow] = useState<Partial<Member>>({});
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const emptyRow: Omit<Member, 'id'> = { name: "", rollNo: "", domain: "", image: null };
   const [adding, setAdding] = useState(false);
   const [newRow, setNewRow] = useState(emptyRow);
 
@@ -18,7 +29,7 @@ export function EditableTableDialog({ isOpen, onClose }) {
       try {
         const res = await fetch('/api/members');
         const json = await res.json();
-        setData(json.map(member => ({ ...member, id: member._id })));
+        setData(json.map((member: any) => ({ ...member, id: member._id, image: member.imageUrl })));
       } catch {
         alert("problem occurred");
       }
@@ -36,91 +47,71 @@ export function EditableTableDialog({ isOpen, onClose }) {
     }
   }, [isOpen]);
 
-  const startEdit = (row) => {
-    setEditingId(row.id);
-    setEditRow({ ...row });
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditRow({});
-  };
+  const startEdit = (row: Member) => { setEditingId(row.id); setEditRow({ ...row }); };
+  const cancelEdit = () => { setEditingId(null); setEditRow({}); };
 
   const saveEdit = async () => {
     const formData = new FormData();
     Object.entries(editRow).forEach(([key, value]) => {
-      if (value !== null) formData.append(key, value);
+        if (value === null || value === undefined) return;
+        if (key === 'image') formData.append('image', value as unknown as Blob);
+        else if (key === 'imageUrl') return;
+        else formData.append(key, value as string);
     });
     await fetch(`/api/members/${editingId}`, { method: 'PUT', body: formData });
-    setData(prev => prev.map(row => row.id === editingId ? { ...editRow } : row));
+    setData(prev => prev.map(row => row.id === editingId ? { ...row, ...editRow } as Member : row));
     cancelEdit();
   };
 
-  const deleteRow = async (id) => {
+  const deleteRow = async (id: string) => {
     if (!window.confirm('Delete this member?')) return;
     await fetch(`/api/members/${id}`, { method: 'DELETE' });
     setData(prev => prev.filter(row => row.id !== id));
   };
 
   const saveNew = async () => {
-    if (!newRow.name || !newRow.rollNo || !newRow.domain) {
-      alert("Fill all fields");
-      return;
-    }
+    if (!newRow.name || !newRow.rollNo) { alert('Fill all fields'); return; }
     const formData = new FormData();
     Object.entries(newRow).forEach(([key, value]) => {
-      if (value !== null) formData.append(key, value);
+        if (value === null || value === undefined) return;
+        if (key === 'image') formData.append('image', value as unknown as Blob);
+        else if (key === 'imageUrl') return;
+        else formData.append(key, value as string);
     });
     const res = await fetch('/api/members', { method: 'POST', body: formData });
     const created = await res.json();
-    setData(prev => [...prev, { ...created, id: created._id }]);
+    setData(prev => [...prev, { ...created, id: created._id, image: created.imageUrl }]);
     setNewRow(emptyRow);
     setAdding(false);
   };
 
-  const cancelNew = () => {
-    setNewRow(emptyRow);
-    setAdding(false);
-  };
+  const cancelNew = () => { setNewRow(emptyRow); setAdding(false); };
 
-  const columns = ['name', 'rollNo', 'domain',  'imageUrl'];
+  const columns: (keyof Omit<Member, 'id'>)[] = ['name', 'rollNo', 'domain', 'image'];
 
-  const renderCell = (col, value, onChange) => {
-    if (col === 'imageUrl') {
+  const renderCell = (col: string, value: any, onChange: (e: any) => void) => {
+    if (col === 'image') {
       return (
         <input
           type="file"
           accept="image/*"
           className="table-input"
           onChange={(e) => {
-            const file = e.target.files[0];
+            const file = e.target.files?.[0];
             if (file) onChange({ target: { value: file } });
           }}
         />
       );
     }
-    return (
-      <input
-        className="table-input"
-        value={value || ""}
-        onChange={onChange}
-      />
-    );
+    return <input className="table-input" value={value || ""} onChange={onChange} />;
   };
 
   return (
-    <dialog
-      className="table-dialog"
-      onClick={(e) => e.stopPropagation()}
-      ref={dialogRef}
-      onClose={onClose}
-    >
+    <dialog className="table-dialog" onClick={(e) => e.stopPropagation()} ref={dialogRef} onClose={onClose}>
       <div className="dialog-header">
         <h2 className="dialog-title">Members</h2>
         <div className="dialog-actions">
-          <button className="btn-save" onClick={() => setAdding(true)} disabled={adding}>
-            + Add
-          </button>
+          <button className="btn-save" onClick={() => setAdding(true)} disabled={adding}>+ Add</button>
           <button className="btn-close" onClick={onClose}>✕</button>
         </div>
       </div>
@@ -139,16 +130,16 @@ export function EditableTableDialog({ isOpen, onClose }) {
             </tr>
           </thead>
           <tbody>
-            {data.map((row,i) => (
+            {data.map((row, i) => (
               <tr key={row.id} className="table-tr">
-                <td className="table-td">{i+1}</td>
+                <td className="table-td">{i + 1}</td>
                 {columns.map(col => (
                   <td key={col} className="table-td">
                     {editingId === row.id
-                      ? renderCell(col, editRow[col], (e) => setEditRow(prev => ({ ...prev, [col]: e.target.value })))
-                      : col === 'imageUrl'
-                        ? <img src={row[col]} alt="" style={{ width: 40, height: 40, objectFit: 'cover' }} />
-                        : row[col]}
+                      ? renderCell(col, editRow[col as keyof Member], (e) => setEditRow(prev => ({ ...prev, [col]: e.target.value })))
+                      : col === 'image'
+                        ? row[col] ? <img src={row[col] as string} alt="" style={{ width: 40, height: 40, objectFit: 'cover' }} /> : '—'
+                        : row[col as keyof Member]}
                   </td>
                 ))}
                 <td className="table-td">
@@ -171,7 +162,7 @@ export function EditableTableDialog({ isOpen, onClose }) {
                 <td className="table-td">—</td>
                 {columns.map(col => (
                   <td key={col} className="table-td">
-                    {renderCell(col, newRow[col], (e) => setNewRow(prev => ({ ...prev, [col]: e.target.value })))}
+                    {renderCell(col, newRow[col as keyof typeof newRow], (e) => setNewRow(prev => ({ ...prev, [col]: e.target.value })))}
                   </td>
                 ))}
                 <td className="table-td">
