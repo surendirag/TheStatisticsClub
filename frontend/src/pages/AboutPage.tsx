@@ -4,7 +4,7 @@ import MemberCard from '../components/MemberCard'
 import './AboutPage.css'
 
 export default function AboutPage() {
-  const { content } = useContent()
+  const { content, loading } = useContent()
 
   const membersByDomain = useMemo(() => {
     const grouped = new Map<string, typeof content.members>()
@@ -24,7 +24,9 @@ export default function AboutPage() {
           <p>Meet the members of The Statistics Club, organized by domain.</p>
         </header>
 
-        {membersByDomain.length === 0 ? (
+        {loading ? (
+          <div className="page-loading">Loading…</div>
+        ) : membersByDomain.length === 0 ? (
           <div className="empty-state">No members added yet.</div>
         ) : (
           <div className="domain-sections">

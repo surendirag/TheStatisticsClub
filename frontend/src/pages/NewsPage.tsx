@@ -2,7 +2,7 @@ import { useContent } from '../context/ContentContext'
 import NewsCard from '../components/NewsCard'
 
 export default function NewsPage() {
-  const { content } = useContent()
+  const { content, loading } = useContent()
   const sortedNews = [...content.news].sort((a, b) => b.date.localeCompare(a.date))
 
   return (
@@ -13,7 +13,9 @@ export default function NewsPage() {
           <p>Announcements, updates, and stories from the club.</p>
         </header>
 
-        {sortedNews.length === 0 ? (
+        {loading ? (
+          <div className="page-loading">Loading…</div>
+        ) : sortedNews.length === 0 ? (
           <div className="empty-state">No news posted yet.</div>
         ) : (
           <div className="card-grid">

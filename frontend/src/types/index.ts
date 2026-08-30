@@ -1,29 +1,37 @@
 export type EventStatus = 'previous' | 'ongoing' | 'upcoming'
 
 export interface Member {
-  id: string
+  id: number | string
   name: string
-  rollNumber: string
-  photo: string
+  rollNo: string
+  rollNumber?: string
   domain: string
+  imageUrl?: string
+  photo?: string
+  cloudinaryId?: string
 }
 
 export interface NewsItem {
-  id: string
+  id: number | string
   title: string
-  content: string
+  description: string
+  content?: string
   date: string
+  imageUrl?: string
   image?: string
+  cloudinaryId?: string
 }
 
 export interface ClubEvent {
-  id: string
+  id: number | string
   title: string
   description: string
   date: string
   location: string
   status: EventStatus
+  imageUrl?: string
   image?: string
+  cloudinaryId?: string
 }
 
 export interface HomeContent {

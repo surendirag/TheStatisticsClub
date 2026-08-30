@@ -22,7 +22,7 @@ const sections: { status: EventStatus; title: string; description: string }[] = 
 ]
 
 export default function EventsPage() {
-  const { content } = useContent()
+  const { content, loading } = useContent()
 
   return (
     <div className="page">
@@ -32,6 +32,9 @@ export default function EventsPage() {
           <p>Workshops, competitions, and club gatherings across the semester.</p>
         </header>
 
+        {loading ? (
+          <div className="page-loading">Loading…</div>
+        ) : (
         <div className="event-sections">
           {sections.map(({ status, title, description }) => {
             const events = content.events.filter((e) => e.status === status)
@@ -54,6 +57,7 @@ export default function EventsPage() {
             )
           })}
         </div>
+        )}
       </div>
     </div>
   )
