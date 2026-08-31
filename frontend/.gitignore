@@ -2,3 +2,4 @@ node_modules
 dist
 *.local
 _react-bits-temp
+.vite
